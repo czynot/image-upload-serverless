@@ -1,0 +1,42 @@
+service: serverless-image-save
+
+frameworkVersion: "2"
+
+provider:
+    name: aws
+    runtime: nodejs12.x
+    lambdaHashingVersion: 20201221
+    profile: czynot
+    region: us-east-1
+
+    iamRoleStatements:
+        - Effect: "Allow"
+          Action:
+              - s3:*
+
+    environment:
+        imageUploadBucket: ${self:custom.imageUploadBucket}
+        region: ${self:provider.region}
+
+custom:
+    imageUploadBucket: parth-image-upload-bucket-url
+
+functions:
+    hello:
+        handler: handler.hello
+
+    imageUpload:
+        handler: lambdas/endpoints/imageUpload.handler
+        events:
+            - http:
+                  path: image-upload
+                  method: POST
+                  cors: true
+
+resources:
+    Resources:
+        ImageUploadBucket:
+            Type: AWS::S3::Bucket
+            Properties:
+                BucketName: ${self:custom.imageUploadBucket}
+                AccessControl: PublicRead
